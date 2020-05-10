@@ -11,8 +11,8 @@
    
 int main() { 
     int sockfd; 
-    char buffer[BUFSIZ]; 
-    char *msg[50]; 
+    char buffer[1055736]; 
+    FILE *fp; 
     struct sockaddr_in servaddr, cliaddr; 
     
     if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) { 
@@ -36,13 +36,25 @@ int main() {
       
     int len, n; 
     
-    len = sizeof(cliaddr);  //len is value/resuslt 
+    len = sizeof(cliaddr);
     while(1){
-        n = recvfrom(sockfd, (char *)buffer, BUFSIZ, MSG_WAITALL, ( struct sockaddr *) &cliaddr, &len); 
+        while(1){
+        n = recvfrom(sockfd, (char *)buffer, sizeof(buffer), MSG_WAITALL, ( struct sockaddr *) &cliaddr, &len);
+        if (n<0) {
+            perror("Error in receiving file");
+            exit(EXIT_FAILURE);
+        }
         buffer[n] = '\0'; 
         printf("Client : %s\n", buffer);
-        fgets(msg,50,stdin); 
-        sendto(sockfd, (const char *)msg, strlen(msg),MSG_CONFIRM, (const struct sockaddr *) &cliaddr,len);  
+        fp = fopen("recv.txt","w+");
+        if(fwrite(buffer,1,sizeof(buffer),fp)<0){
+            perror("Error writing file");
+            exit(EXIT_FAILURE);
+        }
+        printf("File written successfully");
+        break;
+        }
+       break;
     }  
     return 0; 
 } 
